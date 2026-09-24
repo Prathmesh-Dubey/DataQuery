@@ -1,0 +1,285 @@
+// ============================================================
+// DataQuery Agent — API Client
+// All backend communication lives here.
+// ============================================================
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
+
+const TOKEN_KEY = "dqa_access_token";
+
+// ---------- Token helpers ----------
+export function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setToken(token: string): void {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function clearToken(): void {
+  localStorage.removeItem(TOKEN_KEY);
+}
+
+// ---------- Core request wrapper ----------
+async function request<T>(
+  path: string,
+  options: RequestInit = {},
+  auth: boolean = true
+): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string> | undefined),
+  };
+
+  if (auth) {
+    const token = getToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+  // Handle 401 globally
+  if (res.status === 401 && auth) {
+    clearToken();
+    window.dispatchEvent(new Event("auth:expired"));
+    throw new ApiError("Session expired. Please sign in again.", 401);
+  }
+
+  let body: any = null;
+  const text = await res.text();
+  if (text) {
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = text;
+    }
+  }
+
+  if (!res.ok) {
+    const message =
+      (body && (body.detail || body.message || body.error)) ||
+      `Request failed with status ${res.status}`;
+    throw new ApiError(
+      typeof message === "string" ? message : JSON.stringify(message),
+      res.status,
+      body
+    );
+  }
+
+  return body as T;
+}
+
+export class ApiError extends Error {
+  status: number;
+  body: any;
+  constructor(message: string, status: number, body?: any) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.body = body;
+  }
+}
+
+// ============================================================
+// TYPES
+// ============================================================
+export interface User {
+  user_id: string;
+  name: string;
+  email: string;
+  profile_image_url?: string | null;
+  status?: string;
+  created_at?: string;
+}
+
+export interface GoogleAuthResponse {
+  success: boolean;
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+export interface Session {
+  session_id: string;
+  login_time: string | null;
+  logout_time: string | null;
+  last_activity: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  status: string;
+}
+
+export interface Conversation {
+  conversation_id: string;
+  title: string;
+  status: string;
+  created_at: string | null;
+  updated_at: string | null;
+  last_message_at: string | null;
+}
+
+export type MessageRole = "user" | "assistant" | "system";
+export type MessageType = "text" | "data_query" | "chart" | "error";
+
+export interface Message {
+  message_id: string;
+  conversation_id?: string;
+  role: MessageRole;
+  content: string;
+  message_type: MessageType;
+  sql_generated: string | null;
+  created_at: string | null;
+  processing_time_ms?: number | null;
+}
+
+export type ChartType = "bar" | "line" | "pie" | "scatter" | "table";
+
+export interface ChartConfig {
+  x_axis: string;
+  y_axis: string;
+  title: string;
+}
+
+export interface Visualization {
+  chart_type: ChartType;
+  config: ChartConfig | null;
+}
+
+export interface ChatResponse {
+  success: boolean;
+  conversation_id: string;
+  user_message: {
+    message_id: string;
+    content: string;
+  };
+  assistant_message: {
+    message_id: string;
+    content: string;
+  };
+  query: {
+    query_id: string;
+    sql: string;
+    execution_time_ms: number;
+    row_count: number;
+  };
+  result: {
+    columns: string[];
+    rows: Record<string, any>[];
+  };
+  visualization: Visualization;
+}
+
+export interface QueryExecution {
+  query_id: string;
+  generated_sql: string;
+  execution_status: "SUCCESS" | "FAILED" | "BLOCKED" | "TIMEOUT";
+  execution_time_ms: number | null;
+  row_count: number | null;
+  error_message: string | null;
+  created_at: string | null;
+}
+
+export interface QueryDetail extends QueryExecution {
+  result: {
+    result_data: any;
+    chart_type: ChartType | null;
+    chart_config: ChartConfig | null;
+  } | null;
+}
+
+// ============================================================
+// API ENDPOINTS
+// ============================================================
+export const api = {
+  // ---------- Health ----------
+  health: () => request<{ status: string; message: string }>("/", {}, false),
+  dbTest: () =>
+    request<{ status: string; version: string; tables: string[] }>(
+      "/db-test",
+      {},
+      false
+    ),
+
+  // ---------- Authentication ----------
+  googleAuth: (idToken: string) =>
+    request<GoogleAuthResponse>(
+      "/auth/google",
+      {
+        method: "POST",
+        body: JSON.stringify({ id_token: idToken }),
+      },
+      false
+    ),
+
+  logout: () =>
+    request<{ success: boolean; message: string }>("/auth/logout", {
+      method: "POST",
+    }),
+
+  me: () => request<User>("/auth/me"),
+
+  // ---------- Sessions ----------
+  listSessions: () =>
+    request<{ sessions: Session[] }>("/sessions"),
+
+  terminateSession: (sessionId: string) =>
+    request<{ success: boolean; message: string }>(
+      `/sessions/${sessionId}`,
+      { method: "DELETE" }
+    ),
+
+  // ---------- Conversations ----------
+  createConversation: (title?: string) =>
+    request<Conversation>("/conversations", {
+      method: "POST",
+      body: JSON.stringify({ title: title ?? "New Conversation" }),
+    }),
+
+  listConversations: () =>
+    request<{ conversations: Conversation[] }>("/conversations"),
+
+  getConversation: (conversationId: string) =>
+    request<Conversation>(`/conversations/${conversationId}`),
+
+  updateConversation: (
+    conversationId: string,
+    patch: { title?: string; status?: string }
+  ) =>
+    request<{ success: boolean; message: string }>(
+      `/conversations/${conversationId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(patch),
+      }
+    ),
+
+  deleteConversation: (conversationId: string) =>
+    request<{ success: boolean; message: string }>(
+      `/conversations/${conversationId}`,
+      { method: "DELETE" }
+    ),
+
+  // ---------- Messages / Chat ----------
+  listMessages: (conversationId: string) =>
+    request<{ conversation_id: string; messages: Message[] }>(
+      `/conversations/${conversationId}/messages`
+    ),
+
+  getMessage: (messageId: string) =>
+    request<Message>(`/messages/${messageId}`),
+
+  chat: (conversationId: string, message: string) =>
+    request<ChatResponse>(`/conversations/${conversationId}/chat`, {
+      method: "POST",
+      body: JSON.stringify({ message }),
+    }),
+
+  // ---------- Query History ----------
+  listQueries: () =>
+    request<{ queries: QueryExecution[] }>("/queries"),
+
+  getQuery: (queryId: string) =>
+    request<QueryDetail>(`/queries/${queryId}`),
+};
+
+export default api;

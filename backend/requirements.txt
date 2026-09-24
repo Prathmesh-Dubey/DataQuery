@@ -1,0 +1,35 @@
+# ============================================================
+# DataQuery Agent — Python dependencies
+# Install with:  pip install -r requirements.txt
+# ============================================================
+
+# --- Web framework ---
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+
+# --- Database ---
+sqlalchemy==2.0.35
+psycopg2-binary==2.9.11
+
+
+# --- Validation / settings ---
+pydantic==2.13.5
+pydantic-settings==2.5.2
+python-dotenv==1.0.1
+
+# --- Authentication ---
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.2.0
+python-multipart==0.0.12
+
+# --- Gemini ---
+google-genai==2.23.0
+google-auth==2.58.0
+
+# --- Data processing ---
+pandas==2.2.3
+numpy==2.1.2
+
+# --- In-memory query cache (mirrors analytics tables for fast reads) ---
+duckdb==1.5.5

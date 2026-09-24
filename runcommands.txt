@@ -1,0 +1,17 @@
+FIRST TIME SETUP (once, after cloning)
+========================================
+1. Copy backend/.env.example -> backend/.env and fill in real values
+2. Copy front1/.env.example  -> front1/.env  and fill in real values
+3. Run backend\setup.ps1  (creates venv + installs Python deps)
+4. cd front1 && npm install
+
+RUNNING THE APP (every time)
+========================================
+#terminal 1 - backend
+    cd backend
+    .\venv\Scripts\Activate.ps1
+    uvicorn main:app --reload
+
+#terminal 2 - frontend
+    cd front1
+    npm run dev

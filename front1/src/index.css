@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased dark:bg-black dark:text-white;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Chart accent — indigo in light mode (matches the app's indigo brand
+   accent), white in dark mode (matte black/white theme). */
+:root {
+  --chart-primary: #4f46e5;
+}
+.dark {
+  --chart-primary: #ffffff;
+}
+
+/* Scrollbars */
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: rgb(100 116 139 / 0.3);
+  border-radius: 9999px;
+}
+.dark .scroll-thin::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.18);
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-fade-up {
+  animation: fadeUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.45),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+.dark .shimmer::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.07),
+    transparent
+  );
+}
+
+@keyframes softPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(79 70 229 / 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgb(79 70 229 / 0);
+  }
+}
+.pulse-ring {
+  animation: softPulse 2.2s ease-in-out infinite;
+}
+@keyframes softPulseDark {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(255 255 255 / 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgb(255 255 255 / 0);
+  }
+}
+.dark .pulse-ring {
+  animation-name: softPulseDark;
+}

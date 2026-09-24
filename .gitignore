@@ -1,0 +1,18 @@
+# --- Python (backend) ---
+backend/venv/
+backend/__pycache__/
+**/__pycache__/
+*.pyc
+backend/company.db
+
+# --- Node (front1) ---
+front1/node_modules/
+front1/dist/
+
+# --- Secrets ---
+.env
+backend/.env
+front1/.env
+
+# --- Editor/OS ---
+.DS_Store

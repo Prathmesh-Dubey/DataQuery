@@ -1,0 +1,91 @@
+Based on your actual schema (`products`: name/category/unit_price, `sales`: quantity/price/revenue/sale_date), here are good questions to try:
+
+**Rankings / totals**
+- "What are the top 5 products by revenue?"
+- "Which category has the most sales?"
+- "What's the average unit price by category?"
+- "How many units of each product have been sold?"
+
+**Trends over time**
+- "Show monthly sales trends"
+- "What was total revenue in 2025 vs 2024?"
+- "Which month had the highest revenue?"
+- "Show quarterly revenue for 2025"
+
+**Comparisons / breakdowns**
+- "Show total revenue by product"
+- "Compare Electronics vs Furniture revenue"
+- "What's the total quantity sold by category?"
+- "Which products sell the least?"
+
+**Chatbot follow-ups** (test conversation memory — ask one of the above, then):
+- "Now break that down by month"
+- "What about just for Electronics?"
+- "Which of those has the highest average price?"
+
+**Edge cases worth trying**
+- "What's the weather today?" → should refuse (non-data question)
+- "Show me sales of a product that doesn't exist" → should return "No data matched" instead of making something up
+
+Want me to run a few of these live and show you the results?
+
+
+<-----battery dataset questions  --->
+
+Basic Questions
+Show all battery records.
+How many batteries are in the dataset?
+What is the average voltage of all batteries?
+What is the average current?
+What is the average battery temperature?
+What is the average battery capacity?
+What is the average performance of all batteries?
+What is the highest battery voltage?
+What is the lowest battery voltage?
+Which battery has the highest capacity?
+Filtering Questions
+Show batteries with temperature above 40°C.
+Show batteries with performance below 80%.
+Show batteries with state of charge below 50%.
+Show batteries with more than 400 charge cycles.
+Show all batteries with Critical status.
+Show all batteries with Good health.
+Show Lithium-Ion batteries.
+Show Lithium-Polymer batteries.
+Show batteries with voltage below 3.5V.
+Show batteries with current above 4A.
+Analytical Questions
+Which battery has the highest cycle count?
+Which battery has the lowest performance?
+Which battery has the highest temperature?
+What is the average performance of Lithium-Ion batteries?
+What is the average performance of Lithium-Polymer batteries?
+How many batteries have Normal, Warning, and Critical status?
+What is the average capacity of batteries with Good health?
+What is the average temperature of batteries with Critical status?
+Which battery has the highest state of charge?
+Which battery has the lowest state of charge?
+Advanced Text-to-SQL Questions
+
+These are especially useful for demonstrating your DataQuery Agent:
+
+Find batteries where temperature is above 40°C and performance is below 80%.
+Find batteries where state of charge is below 50% and status is Critical.
+Find the top 5 batteries with the highest performance.
+Find the top 5 batteries with the highest cycle count.
+Compare the average performance of Lithium-Ion and Lithium-Polymer batteries.
+Find batteries that have both Good health and performance above 95%.
+Find batteries with voltage below 3.5V and temperature above 40°C.
+Find the battery with the highest capacity among batteries with Good health.
+Calculate the average performance for each health category.
+Calculate the average temperature for each battery type.
+Count how many batteries belong to each battery type.
+Count how many batteries belong to each health category.
+Find the battery with the highest temperature and display its battery ID, voltage, current, and performance.
+Find batteries whose cycle count is greater than the average cycle count.
+Find batteries whose performance is below the average performance.
+Find the average voltage, current, temperature, and performance of all batteries.
+Find the battery with the highest performance among batteries with less than 200 cycles.
+Find batteries where temperature is above the average temperature.
+Find batteries where capacity is greater than 2.8 Ah and performance is above 90%.
+Show a summary of battery health including the number of batteries, average performance, average temperature, and average cycle count for each health category.
